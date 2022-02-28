@@ -1,5 +1,6 @@
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
+import pandas as pd
 
 YOUTUBE_TRENDING_URL = 'https://www.youtube.com/feed/trending'
 
@@ -19,6 +20,28 @@ def get_videos(driver):
   videos = driver.find_elements_by_tag_name(VIDEO_DIV_TAG)
   return videos
 
+def parse_video(video):
+  title_tag = video.find_elements_by_id('video-title')
+  title = title_tag.text
+  url = title_tag.get_attribute('href')
+  
+  thumbnail_tag = video.find_element_by_tag_name('img')
+  thumbnail_url = thumbnail_tag.get_attribute('src')
+
+  channel_div = video.find_element_by_class_name('ytd-channel-name')
+  channel_name = channel_div.text
+
+  description = video.find_element_by_id('description-text').text
+
+  return {
+    'title': title,
+     'url': url,
+     'thumbnail_url': thumbnail_url,
+     'channel': channel_name,
+     'description': description
+  }
+
+
 if __name__=='__main__':
   print('Creating Driver')
   # this is loading the url in browser tab
@@ -27,14 +50,15 @@ if __name__=='__main__':
   videos = get_videos(driver)
   print(f'Found {len(videos)} videos')
 
-  print('Parsing the first video')
-  # title, url, thumbnail_url, channel, views, uploaded, description
-  video = videos[0]
-  title_tag = video.find_elements_by_id('video-title')
-  title = title_tag.text
-  url = title_tag.get_attribute('href')
-  print('Title:',title)
-  print('URL:', url)
+  print('Parsing top 10 videos')
+  videos_data = [parse_video(video) for video in videos[:10]]
+
+  print('Save the data to CSV')
+
+  videos_df = pd.DataFrame(videos_data)
+  print(videos_df)
+  videos_df.to_csv('trending.csv')
+
 
 
 
