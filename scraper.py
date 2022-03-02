@@ -1,5 +1,6 @@
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.common.by import By
 import pandas as pd
 
 YOUTUBE_TRENDING_URL = 'https://www.youtube.com/feed/trending'
@@ -17,21 +18,22 @@ def get_driver():
 def get_videos(driver):
   VIDEO_DIV_TAG = 'ytd-video-renderer'
   driver.get(YOUTUBE_TRENDING_URL)
-  videos = driver.find_elements_by_tag_name(VIDEO_DIV_TAG)
+  driver.implicitly_wait(15)
+  videos = driver.find_elements(By.TAG_NAME, VIDEO_DIV_TAG)
   return videos
 
 def parse_video(video):
-  title_tag = video.find_elements_by_id('video-title')
+  title_tag = video.find_element(By.ID, 'video-title')
   title = title_tag.text
   url = title_tag.get_attribute('href')
   
-  thumbnail_tag = video.find_element_by_tag_name('img')
+  thumbnail_tag = video.find_element(By.TAG_NAME, 'img')
   thumbnail_url = thumbnail_tag.get_attribute('src')
 
-  channel_div = video.find_element_by_class_name('ytd-channel-name')
+  channel_div = video.find_element(By.CLASS_NAME, 'ytd-channel-name')
   channel_name = channel_div.text
 
-  description = video.find_element_by_id('description-text').text
+  description = video.find_element(By.ID, 'description-text').text
 
   return {
     'title': title,
